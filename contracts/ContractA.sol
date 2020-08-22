@@ -7,18 +7,17 @@ contract ContractA is Initializable{
     function initialize(Token addr) public initializer{
         _token=addr;
     }
-    function deposit(address owner) public{
-        uint256 _tokens=_token.balanceOf(owner);    
+    function deposit(address owner,uint256 _tokens) public{
         //_token.approve(address(this),_tokens);
         _token.transferHelper(owner,address(this),_tokens);
         _balance[owner]=_tokens;
-        timeout=block.timestamp;
+        timeout[owner]=block.timestamp;
     }
-    function timeOut() public view returns(uint){
-        return timeout;
+    function timeOut(address owner) public view returns(uint){
+        return timeout[owner];
     }
     function withdraw(address owner) public{
-        require(block.timestamp>=timeout + 15 seconds,"time not expired");
+        require(block.timestamp>=timeout[owner] + 15 seconds,"time not expired");
         _token.transferHelper(address(this),owner,_balance[owner]);
         _balance[owner]=0;
     }
@@ -37,8 +36,8 @@ contract ContractA is Initializable{
     function getCurrentTime() public view returns(uint){
         return block.timestamp;
     }
-    function updateTime(uint secs) public returns(uint){
-        timeout=block.timestamp+secs;
+    function updateTime(uint secs,address owner) public returns(uint){
+        timeout[owner]=block.timestamp+secs;
     }
-    uint timeout;
+    mapping(address=>uint) timeout;
 }
